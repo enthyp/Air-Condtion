@@ -1,12 +1,14 @@
-package com.po.app.REST;
+package com.po.app.data.gios.model.measuring_station;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Commune {
     @JsonProperty
     private String communeName;
+
     @JsonProperty
     private String districtName;
+
     @JsonProperty
     private String provinceName;
 

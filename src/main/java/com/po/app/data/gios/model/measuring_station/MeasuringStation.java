@@ -1,18 +1,23 @@
-package com.po.app.REST;
+package com.po.app.data.gios.model.measuring_station;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class MeasuringStation {
     @JsonProperty
     private int id;
+
     @JsonProperty
     private String stationName;
+
     @JsonProperty
     private String gegrLat;
+
     @JsonProperty
     private String gegrLon;
+
     @JsonProperty
     private City city;
+
     @JsonProperty
     private String addressStreet;
 
