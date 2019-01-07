@@ -11,7 +11,7 @@ import java.util.Map;
  * that can be used for further combining air quality data.
  * It assumes that implementations are based on JAX-RS Client API, hence the types of exceptions thrown.
  */
-public interface Service {
+public interface IService {
 
     /**
      * A representation of e.g. parameter name or index level at given point in time.
@@ -80,7 +80,7 @@ public interface Service {
      * @return map from time instant to level of air quality index.
      */
     Map<LocalDateTime, String> getIndex(Integer stationId, List<LocalDateTime> dateTimes)
-            throws ProcessingException, WebApplicationException ;
+            throws ProcessingException, WebApplicationException;
 
     /**
      * Returns a map from parameter name to current value of parameter for given measuring station.
@@ -94,7 +94,7 @@ public interface Service {
             throws ProcessingException, WebApplicationException;
 
     /**
-     * Returns a map from parameter name and time instant to a value of parameter `parameterName` for
+     * Returns a map from pair (parameterName, timeInstant) to a value of parameter `parameterName` for
      * given measuring station.
      * @param stationId ID of measuring station.
      * @param dateTimes list of time instants for which to return values of given parameters. If empty,

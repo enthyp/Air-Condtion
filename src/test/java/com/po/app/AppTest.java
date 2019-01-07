@@ -2,8 +2,9 @@ package com.po.app;
 
 import static org.mockito.Mockito.*;
 
-import com.po.app.data.airly.AirlyDataSource;
-import com.po.app.data.gios.GiosDataSource;
+import com.po.app.data.airly.repository.AirlyDataSource;
+import com.po.app.data.airly.AirlyService;
+import com.po.app.data.gios.repository.GiosDataSource;
 import com.po.app.data.gios.GiosService;
 import org.junit.Test;
 
@@ -21,7 +22,7 @@ public class AppTest {
 
     @Test
     public void jsonTest() throws IOException {
-        String fileName = "/sensors_14.json";
+        String fileName = "/gios/get_sensors/sensors_14.json";
         File file = new File(this.getClass().getResource(fileName).getFile());
         String fileContent = Files.lines(file.toPath(), StandardCharsets.UTF_8)
                 .collect(Collectors.joining("\n"));
@@ -55,16 +56,19 @@ public class AppTest {
     public void testGios() {
         GiosDataSource dataSource = new GiosDataSource();
         GiosService service = new GiosService(dataSource);
+        System.out.println(dataSource.getIndex(-1));
         System.out.println(service.getParamValue(
                 164,
                 new ArrayList<LocalDateTime>() {{
-                    add(LocalDateTime.of(2018, 12, 31, 16, 0));
+                    add(LocalDateTime.of(2019, 1, 5, 10, 0));
                     add(LocalDateTime.of(2018, 12, 31, 14, 0));
                 }},
                 new ArrayList<String>() {{
                     add("NO2");
                     add("C6H6");
                 }}));
+        //System.out.println(service.getNameIdMap());
+        System.out.println(dataSource.getSensors(1));
     }
 
     @Test
@@ -73,7 +77,20 @@ public class AppTest {
         File file = new File(this.getClass().getResource(fileName).getFile());
         String API_KEY = Files.lines(file.toPath(), StandardCharsets.UTF_8)
                 .collect(Collectors.joining("\n"));
-        System.out.println(API_KEY);
         AirlyDataSource dataSource = new AirlyDataSource(API_KEY);
+        AirlyService service = new AirlyService(dataSource);
+        System.out.println(dataSource.findAllInstallations());
+        //System.out.println(service.getCurrentIndex(576));
+        //System.out.println(service.getCurrentParamValue(576, new ArrayList<String>() {{add("PM25");}}));
+//        System.out.println(service.getIndex(6986,
+//                new ArrayList<LocalDateTime>() {{
+//                    add(LocalDateTime.of(2019, 1, 5, 4, 0));
+//                }}));
+//        System.out.println(service.getParamValue(6986,
+//                new ArrayList<LocalDateTime>() {{
+//                    add(LocalDateTime.of(2019, 1, 5, 4, 0));
+//                }},
+//                new ArrayList<String>() {{
+//                }}));
     }
 }

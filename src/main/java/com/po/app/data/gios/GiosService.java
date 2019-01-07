@@ -1,6 +1,6 @@
 package com.po.app.data.gios;
 
-import com.po.app.data.Service;
+import com.po.app.data.IService;
 import com.po.app.data.gios.model.index.Index;
 import com.po.app.data.gios.model.index.IndexLevel;
 import com.po.app.data.gios.model.measuring_station.MeasuringStation;
@@ -8,6 +8,7 @@ import com.po.app.data.gios.model.sensor.Param;
 import com.po.app.data.gios.model.sensor.Sensor;
 import com.po.app.data.gios.model.sensor_measurements.Measurements;
 import com.po.app.data.gios.model.sensor_measurements.Value;
+import com.po.app.data.gios.repository.IGiosDataSource;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.WebApplicationException;
@@ -23,13 +24,13 @@ import java.util.Map;
 /**
  * Adapter for GiosDataSource instance.
  */
-public class GiosService implements Service {
+public class GiosService implements IService {
 
     private final DateTimeFormatter formatter;
 
-    private final GiosDataSource dataSource;
+    private final IGiosDataSource dataSource;
 
-    public GiosService(GiosDataSource dataSource) {
+    public GiosService(IGiosDataSource dataSource) {
         this.formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         this.dataSource = dataSource;
     }

@@ -76,6 +76,6 @@ public class Index {
     @Override
     public String toString()
     {
-        return "ClassPojo [level = "+level+", color = "+color+", description = "+description+", name = "+name+", value = "+value+", advice = "+advice+"]";
+        return "Index [level = "+level+", color = "+color+", description = "+description+", name = "+name+", value = "+value+", advice = "+advice+"]";
     }
 }

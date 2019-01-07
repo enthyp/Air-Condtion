@@ -64,6 +64,6 @@ public class AveragedValues {
     @Override
     public String toString()
     {
-        return "ClassPojo [standards = "+standards+", tillDateTime = "+tillDateTime+", values = "+values+", indexes = "+indexes+", fromDateTime = "+fromDateTime+"]";
+        return "AveragedValues [standards = "+standards+", tillDateTime = "+tillDateTime+", values = "+values+", indexes = "+indexes+", fromDateTime = "+fromDateTime+"]";
     }
 }

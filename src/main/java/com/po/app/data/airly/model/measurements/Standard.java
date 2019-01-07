@@ -52,6 +52,6 @@ public class Standard {
     @Override
     public String toString()
     {
-        return "ClassPojo [limit = "+limit+", percent = "+percent+", name = "+name+", pollutant = "+pollutant+"]";
+        return "Standard [limit = "+limit+", percent = "+percent+", name = "+name+", pollutant = "+pollutant+"]";
     }
 }

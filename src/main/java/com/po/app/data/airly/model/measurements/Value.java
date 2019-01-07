@@ -28,7 +28,7 @@ public class Value {
     @Override
     public String toString()
     {
-        return "ClassPojo [name = "+name+", value = "+value+"]";
+        return "Value [name = "+name+", value = "+value+"]";
     }
 }
 
