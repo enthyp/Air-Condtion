@@ -7,6 +7,7 @@ import com.po.app.data.gios.model.sensor_measurements.Measurements;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.WebApplicationException;
+import java.io.IOException;
 import java.util.List;
 
 public class GiosCachedDataSource extends GiosDataSourceDecorator {
@@ -22,27 +23,98 @@ public class GiosCachedDataSource extends GiosDataSourceDecorator {
                access that file.
      */
 
-    public GiosCachedDataSource(IGiosDataSource dataSource) {
+    private IGiosCache cache;
+
+    public GiosCachedDataSource(IGiosDataSource dataSource) throws IOException {
         super(dataSource);
+        this.cache = new GiosCache();
     }
 
     @Override
-    public List<MeasuringStation> findAllStations() throws ProcessingException, WebApplicationException {
-        return null;
+    public synchronized List<MeasuringStation> findAllStations() throws ProcessingException, WebApplicationException {
+        List<MeasuringStation> stations = null;
+
+        try {
+            stations = this.cache.findAllStations();
+        } catch (IOException exc) {
+            System.out.println(exc.getMessage());
+        }
+
+        if (stations == null) {
+            stations = this.dataSource.findAllStations();
+            try {
+                this.cache.setAllStations(stations);
+            } catch (IOException exc) {
+                System.out.println(exc.getMessage());
+            }
+        }
+
+        return stations;
     }
 
     @Override
-    public List<Sensor> getSensors(int stationId) throws ProcessingException, WebApplicationException {
-        return null;
+    public synchronized List<Sensor> getSensors(int stationId) throws ProcessingException, WebApplicationException {
+        List<Sensor> sensors = null;
+
+        try {
+            sensors = this.cache.getSensors(stationId);
+        } catch (IOException exc) {
+            System.out.println(exc.getMessage());
+        }
+
+        if (sensors == null) {
+            sensors = this.dataSource.getSensors(stationId);
+            try {
+                this.cache.setSensors(sensors, stationId);
+            } catch (IOException exc) {
+                System.out.println(exc.getMessage());
+            }
+        }
+
+        return sensors;
     }
 
     @Override
-    public Measurements getSensorData(int sensorId) throws ProcessingException, WebApplicationException {
-        return null;
+    public synchronized Measurements getSensorData(int sensorId) throws ProcessingException, WebApplicationException {
+        Measurements measurements = null;
+
+        try {
+            measurements = this.cache.getSensorData(sensorId);
+        } catch (IOException exc) {
+            System.out.println(exc.getMessage());
+        }
+
+        if (measurements == null) {
+            measurements = this.dataSource.getSensorData(sensorId);
+            try {
+                this.cache.setSensorData(measurements, sensorId);
+            } catch (IOException exc) {
+                System.out.println(exc.getMessage());
+            }
+        }
+
+        return measurements;
     }
 
     @Override
-    public Index getIndex(int stationId) throws ProcessingException, WebApplicationException {
-        return null;
+    public synchronized Index getIndex(int stationId) throws ProcessingException, WebApplicationException {
+        Index index = null;
+
+        try {
+            index = this.cache.getIndex(stationId);
+        } catch (IOException exc) {
+            System.out.println(exc.getMessage());
+        }
+
+        if (index == null) {
+            index = this.dataSource.getIndex(stationId);
+            try {
+                this.cache.setIndex(index, stationId);
+            } catch (IOException exc) {
+                System.out.println(exc.getMessage());
+            }
+        }
+
+        return index;
     }
 }

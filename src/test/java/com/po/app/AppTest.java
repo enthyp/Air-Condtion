@@ -4,6 +4,7 @@ import static org.mockito.Mockito.*;
 
 import com.po.app.data.airly.repository.AirlyDataSource;
 import com.po.app.data.airly.AirlyService;
+import com.po.app.data.gios.repository.GiosCachedDataSource;
 import com.po.app.data.gios.repository.GiosDataSource;
 import com.po.app.data.gios.GiosService;
 import org.junit.Test;
@@ -19,6 +20,25 @@ import java.util.stream.Collectors;
 
 
 public class AppTest {
+
+    /*
+     * TODO: for each method of each datasource - test for:
+     * -> incorrect (e.g. negative)/empty argument values (what are the results? Null values? Exceptions?)
+     * -> handling HTTP404, HTTP500 and similar
+     */
+
+    @Test
+    public void mainTestCommandLine() {
+        //App.main(new String[] {"-d", "GIOS", "-f3", "noob", "GIOS", "2018-12-22_12:04:00", "2018-12-22_12:04:00"});
+        //App.main(new String[] {"-d", "GIOS", "-f4", "noob", "doob-meyer", "2018-12-12_12:04:00"});
+        //App.main(new String[] {"-d", "GIOS", "-f1", "Kraków, Aleja Karasińskiego"});
+        //App.main(new String[] {"-d", "GIOS", "-f2", "Kraków, Aleja Krasińskiego", "PM10"});
+//        App.main(new String[] {"-d", "GIOS", "-c", "-f3", "Kraków, Aleja Krasińskiego", "PM10",
+//                "2018-12-12_12:04:00", "2019-12-12_12:04:00"});
+        App.main(new String[] {"-d", "Airly", "-f4", "Osiedle Dywizjonu 303", "Kraków-Nowa Huta", "2018-12-22_12:04:00"});
+
+
+    }
 
     @Test
     public void jsonTest() throws IOException {
@@ -53,22 +73,26 @@ public class AppTest {
     }
 
     @Test
-    public void testGios() {
+    public void testGios() throws IOException {
         GiosDataSource dataSource = new GiosDataSource();
-        GiosService service = new GiosService(dataSource);
+        GiosCachedDataSource cachedDataSource = new GiosCachedDataSource(dataSource);
+        GiosService service = new GiosService(cachedDataSource);
         System.out.println(dataSource.getIndex(-1));
-        System.out.println(service.getParamValue(
-                164,
-                new ArrayList<LocalDateTime>() {{
-                    add(LocalDateTime.of(2019, 1, 5, 10, 0));
-                    add(LocalDateTime.of(2018, 12, 31, 14, 0));
-                }},
-                new ArrayList<String>() {{
-                    add("NO2");
-                    add("C6H6");
-                }}));
-        //System.out.println(service.getNameIdMap());
-        System.out.println(dataSource.getSensors(1));
+//        System.out.println(service.getParamValue(
+//                164,
+//                new ArrayList<LocalDateTime>() {{
+//                    add(LocalDateTime.of(2019, 1, 5, 10, 0));
+//                    add(LocalDateTime.of(2018, 12, 31, 14, 0));
+//                }},
+//                new ArrayList<String>() {{
+//                    add("NO2");
+//                    add("C6H6");
+//                }}));
+//        System.out.println(service.getNameIdMap());
+        //System.out.println(cachedDataSource.findAllStations());
+        //System.out.println(cachedDataSource.getSensors(14));
+        //System.out.println(cachedDataSource.getSensorData(92));
+        //System.out.println(cachedDataSource.getIndex(52));
     }
 
     @Test

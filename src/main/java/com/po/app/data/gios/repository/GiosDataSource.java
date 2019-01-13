@@ -61,6 +61,7 @@ public class GiosDataSource implements IGiosDataSource {
     }
 
     public Index getIndex(int stationId) throws ProcessingException, WebApplicationException {
+        System.out.println("BOB");
         return baseTarget
                 .path(ENDPOINT_GET_INDEX)
                 .path(String.valueOf(stationId))

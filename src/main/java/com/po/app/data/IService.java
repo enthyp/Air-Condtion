@@ -38,12 +38,16 @@ public interface IService {
      * A representation of parameter or index value at given point in time.
      */
     class DoubleInstant {
-        LocalDateTime dateTime;
-        double value;
+        public LocalDateTime dateTime;
+        public double value;
 
         public DoubleInstant(LocalDateTime dateTime, double value) {
             this.dateTime = dateTime;
             this.value = value;
+        }
+
+        public LocalDateTime getDateTime() {
+            return this.dateTime;
         }
 
         @Override

@@ -2,7 +2,9 @@ package com.po.app.data.gios.model.sensor;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Param {
+import java.io.Serializable;
+
+public class Param implements Serializable {
     @JsonProperty
     private String paramName;
 

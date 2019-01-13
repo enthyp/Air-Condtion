@@ -2,9 +2,10 @@ package com.po.app.data.gios.model.sensor_measurements;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
-public class Measurements {
+public class Measurements implements Serializable {
     @JsonProperty
     private String key;
 

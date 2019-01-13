@@ -2,7 +2,9 @@ package com.po.app.data.gios.model.sensor_measurements;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Value {
+import java.io.Serializable;
+
+public class Value implements Serializable {
     @JsonProperty
     private String date;
 

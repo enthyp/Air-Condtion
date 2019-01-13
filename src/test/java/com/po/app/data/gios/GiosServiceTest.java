@@ -1,10 +1,10 @@
 package com.po.app.data.gios;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.po.app.data.airly.model.measurements.Measurements;
 import com.po.app.data.gios.model.index.Index;
 import com.po.app.data.gios.model.measuring_station.MeasuringStation;
 import com.po.app.data.gios.model.sensor.Sensor;
+import com.po.app.data.gios.model.sensor_measurements.Measurements;
 import com.po.app.data.gios.repository.GiosDataSource;
 import org.junit.Before;
 import org.junit.Test;
@@ -133,6 +133,6 @@ public class GiosServiceTest {
 
         Measurements measurements = new ObjectMapper().readValue(json, Measurements.class);
         doReturn(measurements).when(dataSource).getSensorData(92);
-        doReturn(new ArrayList<>()).when(dataSource).getSensorData(not(eq(92)));
+        doReturn(new Measurements()).when(dataSource).getSensorData(not(eq(92)));
     }
 }

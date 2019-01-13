@@ -2,7 +2,9 @@ package com.po.app.data.gios.model.measuring_station;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Commune {
+import java.io.Serializable;
+
+public class Commune implements Serializable {
     @JsonProperty
     private String communeName;
 

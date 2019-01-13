@@ -57,6 +57,7 @@ public class GiosService implements IService {
     public StringInstant getCurrentIndex(Integer stationId)
             throws ProcessingException, WebApplicationException {
         Index index = this.dataSource.getIndex(stationId);
+
         try {
             String indexDateTime = index.getStCalcDate();
             LocalDateTime dateTime;

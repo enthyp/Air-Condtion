@@ -2,7 +2,9 @@ package com.po.app.data.gios.model.measuring_station;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class MeasuringStation {
+import java.io.Serializable;
+
+public class MeasuringStation implements Serializable {
     @JsonProperty
     private int id;
 

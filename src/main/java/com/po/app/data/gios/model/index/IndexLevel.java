@@ -2,7 +2,9 @@ package com.po.app.data.gios.model.index;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class IndexLevel {
+import java.io.Serializable;
+
+public class IndexLevel implements Serializable {
     @JsonProperty
     private int id;
 

@@ -2,7 +2,9 @@ package com.po.app.data.gios.model.sensor;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Sensor
+import java.io.Serializable;
+
+public class Sensor implements Serializable
 {
     @JsonProperty
     private int id;
