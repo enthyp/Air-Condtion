@@ -23,7 +23,7 @@ public class Command {
     }
 
     public enum FunctionalityChoice {
-        f1, f2, f3, f4, f5, f6, f7;
+        s, f1, f2, f3, f4, f5, f6, f7, f8;
     }
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss");
@@ -33,6 +33,7 @@ public class Command {
     private boolean caching;
     private FunctionalityChoice functionality;
 
+    private int N;
     private List<String> stationNames = new ArrayList<>();
     private List<String> parameterNames = new ArrayList<>();
     private List<LocalDateTime> dateTimes = new ArrayList<>();
@@ -54,6 +55,10 @@ public class Command {
 
         Option caching = Option.builder("c")
                 .desc("if passed air quality data is cached locally")
+                .build();
+
+        Option show = Option.builder("s")
+                .desc("if passed all available station names are shown")
                 .build();
 
         Option func1 = Option.builder("f1")
@@ -85,13 +90,48 @@ public class Command {
                         "\ndate format: yyyy-MM-dd_HH:mm:ss")
                 .build();
 
+        Option func5 = Option.builder("f5")
+                .hasArgs()
+                .argName("station name> <date")
+                .numberOfArgs(2)
+                .desc("finds parameter that had the lowest value at given datetime and station")
+                .build();
+
+        Option func6 = Option.builder("f6")
+                .hasArgs()
+                .argName("station name> <date> <N")
+                .numberOfArgs(3)
+                .desc("displays N values of parameters which exceeded air quality norms the most " +
+                        "on given date and for given station (sorted in ascending order)")
+                .build();
+
+        Option func7 = Option.builder("f7")
+                .hasArgs()
+                .argName("station name> [<station name> ...] <parameter name")
+                .numberOfArgs(UNLIMITED_VALUES)
+                .desc("displays date and station for which given parameter achieved the maximum and " +
+                        "minimum value (of all given stations)")
+                .build();
+
+        Option func8 = Option.builder("f8")
+                .hasArgs()
+                .argName("parameter name> <station name> [<station name> ...] <start date> <end date")
+                .numberOfArgs(UNLIMITED_VALUES)
+                .desc("displays ASCII plots of parameter values for all given stations in given time span")
+                .build();
+
         Options options = new Options();
         OptionGroup optionGroup = new OptionGroup();
 
+        optionGroup.addOption(show);
         optionGroup.addOption(func1);
         optionGroup.addOption(func2);
         optionGroup.addOption(func3);
         optionGroup.addOption(func4);
+        optionGroup.addOption(func5);
+        optionGroup.addOption(func6);
+        optionGroup.addOption(func7);
+        optionGroup.addOption(func8);
         optionGroup.setRequired(true);
         options.addOptionGroup(optionGroup);
 
@@ -103,6 +143,8 @@ public class Command {
             this.processCommand(cmd);
             this.parsed = true;
         } catch (ParseException exc) {
+            // TODO: don't do it! throw some other exception of your own!
+            System.out.println(exc.getMessage());
             String header = "Data provider name must be passed. " +
                             "Also exactly one functionality option (e.g. '-f1') must be passed.";
             HelpFormatter formatter = new HelpFormatter();
@@ -119,7 +161,9 @@ public class Command {
             this.provider = DataProvider.valueOf(dataProvider);
         }
 
-        if (cmd.hasOption("f1")) {
+        if (cmd.hasOption("s")) {
+            this.functionality = FunctionalityChoice.s;
+        } else if(cmd.hasOption("f1")) {
             this.stationNames.add(cmd.getOptionValue("f1"));
             this.functionality = FunctionalityChoice.f1;
         } else if (cmd.hasOption("f2")) {
@@ -136,12 +180,13 @@ public class Command {
                 this.dateTimes.add(LocalDateTime.parse(args[2], this.formatter));
                 this.dateTimes.add(LocalDateTime.parse(args[3], this.formatter));
             } catch (DateTimeException exc) {
-                throw new ParseException("");
+                throw new ParseException("Incorrect date format!");
             }
 
             this.functionality = FunctionalityChoice.f3;
 
         } else if (cmd.hasOption("f4")) {
+            // TODO: add data structure that encapsulates adding typical arguments like station names, dates etc.
             String[] args = cmd.getOptionValues("f4");
             int i = 0;
             for (; i < args.length - 1; i++) {
@@ -150,11 +195,62 @@ public class Command {
             try {
                 this.dateTimes.add(LocalDateTime.parse(args[i], this.formatter));
             } catch (DateTimeException exc) {
-                throw new ParseException("");
+                throw new ParseException("Incorrect date format!");
             }
 
             this.functionality = FunctionalityChoice.f4;
 
+        } else if (cmd.hasOption("f5")) {
+            String[] args = cmd.getOptionValues("f5");
+            // TODO: input validation? o.O
+            this.stationNames.add(args[0]);
+            try {
+                this.dateTimes.add(LocalDateTime.parse(args[1], this.formatter));
+            } catch (DateTimeException exc) {
+                throw new ParseException("Incorrect date format!");
+            }
+
+            this.functionality = FunctionalityChoice.f5;
+        } else if (cmd.hasOption("f6")) {
+            String[] args = cmd.getOptionValues("f6");
+            this.stationNames.add(args[0]);
+            try {
+                this.dateTimes.add(LocalDateTime.parse(args[1], this.formatter));
+            } catch (DateTimeException exc) {
+                throw new ParseException("Incorrect date format!");
+            }
+            try {
+                this.N = Integer.valueOf(args[2]);
+            } catch (NumberFormatException exc) {
+                throw new ParseException("N must be an integer!");
+            }
+
+            this.functionality = FunctionalityChoice.f6;
+        } else if (cmd.hasOption("f7")) {
+            String[] args = cmd.getOptionValues("f7");
+            int i = 0;
+            for (; i < args.length - 1; i++) {
+                this.stationNames.add(args[i]);
+            }
+            this.parameterNames.add(args[i]);
+
+            this.functionality = FunctionalityChoice.f7;
+        }  else if (cmd.hasOption("f8")) {
+            String[] args = cmd.getOptionValues("f8");
+            this.parameterNames.add(args[0]);
+            int i = 1;
+            for (; i < args.length - 2; i++) {
+                this.stationNames.add(args[i]);
+            }
+            // TODO: boundary check! throw exception, best build your custom ParseException!
+            try {
+                this.dateTimes.add(LocalDateTime.parse(args[i], this.formatter));
+                this.dateTimes.add(LocalDateTime.parse(args[i+1], this.formatter));
+            } catch (DateTimeException exc) {
+                throw new ParseException("Incorrect date format!");
+            }
+
+            this.functionality = FunctionalityChoice.f8;
         }
     }
 
@@ -185,4 +281,6 @@ public class Command {
     public List<LocalDateTime> getDateTimes() {
         return dateTimes;
     }
+
+    public int getN() { return N; }
 }

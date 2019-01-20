@@ -1,19 +1,21 @@
 package com.po.app.data.gios;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.AdditionalMatchers.not;
+import static org.mockito.Mockito.doReturn;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.po.app.Integration;
+import com.po.app.Unit;
 import com.po.app.data.gios.model.index.Index;
 import com.po.app.data.gios.model.measuring_station.MeasuringStation;
-import com.po.app.data.gios.model.sensor.Sensor;
-import com.po.app.data.gios.model.sensor_measurements.Measurements;
 import com.po.app.data.gios.repository.GiosDataSource;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.mockito.AdditionalMatchers.not;
-import static org.mockito.Mockito.*;
-
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.File;
@@ -25,8 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
-
+@Category(Unit.class)
 @RunWith(MockitoJUnitRunner.class)
 public class GiosServiceTest {
 
@@ -109,30 +110,30 @@ public class GiosServiceTest {
 
         Index index = new ObjectMapper().readValue(json, Index.class);
         doReturn(index).when(dataSource).getIndex(52);
-        doReturn(new Index()).when(dataSource).getIndex(not(eq(52)));
+//        doReturn(new Index()).when(dataSource).getIndex(not(eq(52)));
     }
 
-    @Before
-    public void setupGetSensors() throws IOException {
-        String fileName = "/gios/get_sensors/sensors_14.json";
-        File file = new File(this.getClass().getResource(fileName).getFile());
-        String json = Files.lines(file.toPath(), StandardCharsets.UTF_8)
-                .collect(Collectors.joining("\n"));
-
-        Sensor[] sensors = new ObjectMapper().readValue(json, Sensor[].class);
-        doReturn(new ArrayList<>(Arrays.asList(sensors))).when(dataSource).getSensors(14);
-        doReturn(new ArrayList<>()).when(dataSource).getSensors(not(eq(14)));
-    }
-
-    @Before
-    public void setupGetSensorData() throws IOException {
-        String fileName = "/gios/get_sensors_data/data_92.json";
-        File file = new File(this.getClass().getResource(fileName).getFile());
-        String json = Files.lines(file.toPath(), StandardCharsets.UTF_8)
-                .collect(Collectors.joining("\n"));
-
-        Measurements measurements = new ObjectMapper().readValue(json, Measurements.class);
-        doReturn(measurements).when(dataSource).getSensorData(92);
-        doReturn(new Measurements()).when(dataSource).getSensorData(not(eq(92)));
-    }
+//    @Before
+//    public void setupGetSensors() throws IOException {
+//        String fileName = "/gios/get_sensors/sensors_14.json";
+//        File file = new File(this.getClass().getResource(fileName).getFile());
+//        String json = Files.lines(file.toPath(), StandardCharsets.UTF_8)
+//                .collect(Collectors.joining("\n"));
+//
+//        Sensor[] sensors = new ObjectMapper().readValue(json, Sensor[].class);
+//        doReturn(new ArrayList<>(Arrays.asList(sensors))).when(dataSource).getSensors(14);
+//        doReturn(new ArrayList<>()).when(dataSource).getSensors(not(eq(14)));
+//    }
+//
+//    @Before
+//    public void setupGetSensorData() throws IOException {
+//        String fileName = "/gios/get_sensors_data/data_92.json";
+//        File file = new File(this.getClass().getResource(fileName).getFile());
+//        String json = Files.lines(file.toPath(), StandardCharsets.UTF_8)
+//                .collect(Collectors.joining("\n"));
+//
+//        Measurements measurements = new ObjectMapper().readValue(json, Measurements.class);
+//        doReturn(measurements).when(dataSource).getSensorData(92);
+//        doReturn(new Measurements()).when(dataSource).getSensorData(not(eq(92)));
+//    }
 }

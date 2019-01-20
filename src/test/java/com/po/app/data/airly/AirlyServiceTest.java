@@ -1,9 +1,10 @@
 package com.po.app.data.airly;
 
+import com.po.app.Unit;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
-
+@Category(Unit.class)
 public class AirlyServiceTest {
 
     @Test

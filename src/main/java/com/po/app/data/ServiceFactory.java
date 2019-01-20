@@ -1,6 +1,5 @@
 package com.po.app.data;
 
-import com.po.app.App;
 import com.po.app.Command;
 import com.po.app.data.airly.AirlyService;
 import com.po.app.data.airly.repository.AirlyCachedDataSource;
@@ -11,11 +10,9 @@ import com.po.app.data.gios.repository.GiosCachedDataSource;
 import com.po.app.data.gios.repository.GiosDataSource;
 import com.po.app.data.gios.repository.IGiosDataSource;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.stream.Collectors;
+import java.io.InputStream;
+import java.util.Properties;
 
 public class ServiceFactory {
     public static IService getService(Command.DataProvider provider, boolean useCaching) {
@@ -36,10 +33,13 @@ public class ServiceFactory {
             return service;
         } else if (provider.equals(Command.DataProvider.Airly)) {
             try {
-                String fileName = "/credentials.txt";
-                File file = new File(App.class.getResource(fileName).getFile());
-                String API_KEY = Files.lines(file.toPath(), StandardCharsets.UTF_8)
-                        .collect(Collectors.joining("\n"));
+                String resourceName = "cred.properties";
+                ClassLoader loader = Thread.currentThread().getContextClassLoader();
+                Properties credProps = new Properties();
+                try(InputStream resourceStream = loader.getResourceAsStream(resourceName)) {
+                    credProps.load(resourceStream);
+                }
+                String API_KEY = credProps.getProperty("API_KEY");
                 IAirlyDataSource dataSource = new AirlyDataSource(API_KEY);
 
                 if (useCaching) {

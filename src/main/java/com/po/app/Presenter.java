@@ -22,18 +22,37 @@ public class Presenter {
             this.provider = cmd.getProvider();
             boolean useCaching = cmd.useCaching();
             this.service = ServiceFactory.getService(this.provider, useCaching);
-
+            // TODO: too many places must be changed to add functionality (vide: lecture)!
             switch (cmd.getFunctionality()) {
+                case s: show();
+                    break;
                 case f1: functionality1();
-                         break;
+                    break;
                 case f2: functionality2();
                     break;
                 case f3: functionality3();
                     break;
                 case f4: functionality4();
                     break;
+                case f5: functionality5();
+                    break;
+                case f6: functionality6();
+                    break;
+                case f7: functionality7();
+                    break;
+                case f8: functionality8();
+                    break;
             }
         }
+    }
+
+    private void show() {
+        Map<String, Integer> nameIdMap = this.service.getNameIdMap();
+        System.out.println("Stations:");
+        nameIdMap.keySet().stream()
+                .sorted()
+                .map(s -> "-> " + s)
+                .forEach(System.out::println);
     }
 
     private void functionality1() {
@@ -211,11 +230,280 @@ public class Presenter {
         }
     }
 
+    private void functionality5() {
+        LocalDateTime datetime = cmd.getDateTimes().get(0);
+        Map<String, Integer> nameIdMap = this.service.getNameIdMap();
+        String stationName = cmd.getStationNames().get(0);
+        int stationId = this.getStationId(nameIdMap, stationName, this.provider);
+
+        boolean minValueFound = false;
+        String minParameterName = "";
+        double minValue = 0;
+
+        // TODO: check null returns, empty returns and other stuff!
+        // TODO: do your best to test it!
+        if (stationId != -1) {
+            Map<IService.StringInstant, Double> paramValues =
+                this.service.getParamValue(
+                        stationId,
+                        new ArrayList<LocalDateTime>() {{
+                            add(datetime);
+                        }},
+                        new ArrayList<>());
+
+            for (Map.Entry<IService.StringInstant, Double> measurement : paramValues.entrySet()) {
+                String parameterName = measurement.getKey().content;
+                double value = measurement.getValue();
+
+                if (!minValueFound || value < minValue) {
+                    if (!minValueFound)
+                        minValueFound = true;
+                    minParameterName = parameterName;
+                    minValue = value;
+                }
+            }
+
+            if (!minValueFound) {
+                // TODO: change to returning Strings in all functionality methods
+                // TODO: maybe encapsulate functionality to reduce code duplication
+                System.out.println("No measurements found for given date!");
+            } else {
+                System.out.println(String.format("Minimal value %.2f of parameter %s found.",
+                        minValue, minParameterName));
+            }
+        } else {
+            System.out.println("Station not found!");
+        }
+
+    }
+
+    private class ParamValue implements Comparable<ParamValue>{
+        String parName;
+        double parValue;
+
+        ParamValue(String parName, double parValue) {
+            this.parName = parName;
+            this.parValue = parValue;
+        }
+
+        @Override
+        public int compareTo(ParamValue other) {
+            return Double.compare(this.parValue, other.parValue);
+        }
+    }
+
+    private void functionality6() {
+        LocalDateTime datetime = cmd.getDateTimes().get(0);
+        Map<String, Integer> nameIdMap = this.service.getNameIdMap();
+        String stationName = cmd.getStationNames().get(0);
+        int stationId = this.getStationId(nameIdMap, stationName, this.provider);
+        int N = this.cmd.getN();
+
+        if (stationId != -1) {
+            Map<IService.StringInstant, Double> paramValues =
+                this.service.getParamValue(
+                        stationId,
+                        new ArrayList<LocalDateTime>() {{
+                            add(datetime);
+                        }},
+                        new ArrayList<>());
+
+            PriorityQueue<ParamValue> topNormBreakers = new PriorityQueue<>(Collections.reverseOrder());
+
+            for (Map.Entry<IService.StringInstant, Double> entry : paramValues.entrySet()) {
+                // TODO: make sure entries are never  empty! (with null key or sth)
+                String parName = entry.getKey().content;
+                double parValue = entry.getValue();
+
+                if (airQualityNorms.containsKey(parName)) {
+                    double norm = airQualityNorms.get(parName);
+                    if (parValue > norm) {
+                        topNormBreakers.offer(new ParamValue(parName, parValue - norm));
+                    }
+                }
+            }
+
+            if (!topNormBreakers.isEmpty()) {
+                for (int i = 0; i < N; i++) {
+                    ParamValue paramValue = topNormBreakers.poll();
+                    if (paramValue != null) {
+                        System.out.println(String.format("%d. Parameter %s: %.2f norm exceeding.",
+                                i+1, paramValue.parName, paramValue.parValue));
+                    } else {
+                        System.out.println(String.format("Only %d norm exceeding case%s found. ",
+                                i, i == 1 ? "" : "s"));
+                        break;
+                    }
+                }
+            } else {
+                System.out.println("No norm exceeding cases found!");
+            }
+
+        } else {
+            System.out.println("Station not found!");
+        }
+    }
+
+    private void functionality7() {
+        String targetParName = cmd.getParameterNames().get(0);
+        List<String> stationNames = cmd.getStationNames();
+
+        // Get IDs of given stations.
+        Map<String, Integer> nameIdMap = this.service.getNameIdMap();
+        Map<String, Integer> nameIdMapSelected = new HashMap<>();
+        for (String stationName : stationNames) {
+            int id = this.getStationId(nameIdMap, stationName, this.provider);
+
+            if (id != -1)
+                nameIdMapSelected.put(stationName, id);
+            else
+                System.out.println(String.format("Station %s not found!", stationName));
+        }
+
+        boolean valuesFound = false;
+        double minValue = 0, maxValue = 0;
+        String minStationName = "", maxStationName = "";
+        LocalDateTime minDateTime = LocalDateTime.now(), maxDateTime = LocalDateTime.now();
+
+        for (Map.Entry<String, Integer> entry : nameIdMapSelected.entrySet()) {
+            String stationName = entry.getKey();
+            Map<IService.StringInstant, Double> paramValues =
+                    this.service.getParamValue(entry.getValue(), new ArrayList<>(),
+                            new ArrayList<String>() {{
+                                add(targetParName);
+                    }});
+
+            // TODO: add method to get values of one parameter from such map as above!
+            for (Map.Entry<IService.StringInstant, Double> parValue : paramValues.entrySet()) {
+                LocalDateTime dateTime = parValue.getKey().dateTime;
+                double value = parValue.getValue();
+
+                if (!valuesFound) {
+                    minValue = maxValue = value;
+                    minDateTime = maxDateTime = dateTime;
+                    minStationName = maxStationName = stationName;
+                } else {
+                    if (value < minValue) {
+                        minValue = value;
+                        minDateTime = dateTime;
+                        minStationName = stationName;
+                    } else if (value > maxValue) {
+                        maxValue = value;
+                        maxDateTime = dateTime;
+                        maxStationName = stationName;
+                    }
+                }
+
+                valuesFound = true;
+            }
+
+            if (valuesFound) {
+                System.out.println(String.format("Minimum value: %.2f at '%s' station on %s" +
+                                "\nMaximum value: %.2f at '%s' station on %s",
+                        minValue, minStationName, minDateTime,
+                        maxValue, maxStationName, maxDateTime));
+            } else {
+                System.out.println("No measurements found for given parameter!");
+            }
+        }
+    }
+
+    private void functionality8() {
+        StringBuilder builder = new StringBuilder();
+
+        // TODO: you just copied that again!!!!!!!!!
+        String targetParName = cmd.getParameterNames().get(0);
+        LocalDateTime dateFrom = cmd.getDateTimes().get(0);
+        LocalDateTime dateTo = cmd.getDateTimes().get(1);
+        List<String> stationNames = cmd.getStationNames();
+
+        // Get IDs of given stations.
+        Map<String, Integer> nameIdMap = this.service.getNameIdMap();
+        Map<String, Integer> nameIdMapSelected = new HashMap<>();
+        for (String stationName : stationNames) {
+            int id = this.getStationId(nameIdMap, stationName, this.provider);
+
+            if (id != -1)
+                nameIdMapSelected.put(stationName, id);
+            else
+                System.out.println(String.format("Station %s not found!", stationName));
+        }
+
+        Map<String, List<IService.DoubleInstant>> stationMeasurementsMap = new HashMap<>();
+        boolean valueFound = false;
+        double maxValue = 0;
+
+        for (String stationName : nameIdMapSelected.keySet()) {
+            Map<IService.StringInstant, Double> paramValues =
+                    this.service.getParamValue(nameIdMapSelected.get(stationName),
+                            new ArrayList<>(),
+                            new ArrayList<String>() {{
+                                add(targetParName);
+                            }});
+
+            for (Map.Entry<IService.StringInstant, Double> parValue : paramValues.entrySet()) {
+                // TODO: again, providers must either provide non-empty objects or throw exceptions!
+                LocalDateTime dateTime = parValue.getKey().dateTime;
+                double value = parValue.getValue();
+
+                if ((dateTime.isEqual(dateFrom) || dateTime.isAfter(dateFrom))
+                        && (dateTime.isEqual(dateTo) || dateTime.isBefore(dateTo))) {
+                    if (!stationMeasurementsMap.containsKey(stationName)) {
+                        stationMeasurementsMap.put(stationName, new ArrayList<>());
+                    }
+                    stationMeasurementsMap.get(stationName).add(new IService.DoubleInstant(dateTime, value));
+
+                    if (!valueFound || value > maxValue) {
+                        maxValue = value;
+                    }
+
+                    valueFound = true;
+                }
+            }
+        }
+
+        // Station measurements map ready... Print it now.
+        // TODO: careful - empty map!
+        Integer maxNameLength = stationMeasurementsMap.keySet()
+                .stream().map(String::length).max(Integer::compareTo).get();
+
+        int barWidth = 60;
+        for (String stationName : nameIdMapSelected.keySet()) {
+            if (stationMeasurementsMap.containsKey(stationName)) {
+                List<IService.DoubleInstant> measurements = stationMeasurementsMap.get(stationName);
+                Collections.sort(measurements);
+
+                for (IService.DoubleInstant measurement : measurements) {
+                    LocalDateTime dateTime = measurement.dateTime;
+                    double value = measurement.value;
+                    builder.append(String.format("%s  %-" + Math.round(maxNameLength * 1.2) + "s  ",
+                            dateTime, "(" + stationName + ")"));
+                    for (int i = 0; i < value / maxValue * barWidth; i++) {
+                        builder.append("#");
+                    }
+                    if (value / maxValue * barWidth >= 1) {
+                        builder.append(String.format("   %.2f\n", value));
+                    } else {
+                        builder.append(String.format("%.2f\n", value));
+                    }
+                }
+
+                builder.append("\n");
+            } else {
+                builder.append(String.format("____-__-__T__:__ (%s) - no measurements found.\n", stationName));
+            }
+        }
+
+        System.out.println(builder.toString());
+    }
+
     private int getStationId(Map<String, Integer> nameIdMap, String name, Command.DataProvider provider) {
         int id = -1;
         if (provider.equals(Command.DataProvider.GIOS)) {
             id = nameIdMap.getOrDefault(name, -1);
         } else if (provider.equals(Command.DataProvider.Airly)){
+            // TODO: should somehow point out which station it returns! (Kraków station ...)
+            // Ideally this method could return a list of IDs for all matching names (id -> name map!)
             for (Map.Entry<String, Integer> entry : nameIdMap.entrySet()) {
                 // Simple name matching for now...
                 if (entry.getKey().matches(".*" + name + ".*")) {
@@ -227,4 +515,15 @@ public class Presenter {
 
         return id;
     }
+
+    // upper bound in micrograms per cubic meter
+    private final Map<String, Double> airQualityNorms = new HashMap<String, Double>() {{
+        put("C6H6", 5.0);
+        put("NO2", 200.0);
+        put("SO2", 350.0);
+        put("CO", 10000.0);
+        put("PM10", 50.0);
+        put("PM25", 25.0);
+        put("Pb", 0.5);
+    }};
 }

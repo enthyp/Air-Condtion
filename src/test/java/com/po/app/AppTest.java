@@ -8,17 +8,21 @@ import com.po.app.data.gios.repository.GiosCachedDataSource;
 import com.po.app.data.gios.repository.GiosDataSource;
 import com.po.app.data.gios.GiosService;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
-
+@Category({Functional.class, WebAccess.class})
 public class AppTest {
 
     /*
@@ -29,15 +33,14 @@ public class AppTest {
 
     @Test
     public void mainTestCommandLine() {
+        //App.main(new String[] {"-d", "GIOS", "-f1", "Kraków, Aleja Krasińskiego"});
         //App.main(new String[] {"-d", "GIOS", "-f3", "noob", "GIOS", "2018-12-22_12:04:00", "2018-12-22_12:04:00"});
         //App.main(new String[] {"-d", "GIOS", "-f4", "noob", "doob-meyer", "2018-12-12_12:04:00"});
-        //App.main(new String[] {"-d", "GIOS", "-f1", "Kraków, Aleja Karasińskiego"});
         //App.main(new String[] {"-d", "GIOS", "-f2", "Kraków, Aleja Krasińskiego", "PM10"});
 //        App.main(new String[] {"-d", "GIOS", "-c", "-f3", "Kraków, Aleja Krasińskiego", "PM10",
 //                "2018-12-12_12:04:00", "2019-12-12_12:04:00"});
-        App.main(new String[] {"-d", "Airly", "-f4", "Osiedle Dywizjonu 303", "Kraków-Nowa Huta", "2018-12-22_12:04:00"});
-
-
+        //App.main(new String[] {"-d", "GIOS", "-f4", "Kraków, Aleja Krasińskiego", "Kraków, ul. Bujaka", "2018-12-22_12:04:00"});
+        App.main(new String[] {"-d", "GIOS", "-s"});
     }
 
     @Test
@@ -97,10 +100,13 @@ public class AppTest {
 
     @Test
     public void testAirly() throws IOException {
-        String fileName = "/credentials.txt";
-        File file = new File(this.getClass().getResource(fileName).getFile());
-        String API_KEY = Files.lines(file.toPath(), StandardCharsets.UTF_8)
-                .collect(Collectors.joining("\n"));
+        String resourceName = "cred.properties";
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        Properties credProps = new Properties();
+        try(InputStream resourceStream = loader.getResourceAsStream(resourceName)) {
+            credProps.load(resourceStream);
+        }
+        String API_KEY = credProps.getProperty("API_KEY");
         AirlyDataSource dataSource = new AirlyDataSource(API_KEY);
         AirlyService service = new AirlyService(dataSource);
         System.out.println(dataSource.findAllInstallations());

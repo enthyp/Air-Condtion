@@ -37,7 +37,7 @@ public interface IService {
     /**
      * A representation of parameter or index value at given point in time.
      */
-    class DoubleInstant {
+    class DoubleInstant implements Comparable<DoubleInstant> {
         public LocalDateTime dateTime;
         public double value;
 
@@ -56,6 +56,11 @@ public interface IService {
                     "dateTime=" + dateTime +
                     ", value=" + value +
                     '}';
+        }
+
+        @Override
+        public int compareTo(DoubleInstant other) {
+            return this.dateTime.compareTo(other.dateTime);
         }
     }
 
