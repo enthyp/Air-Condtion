@@ -7,20 +7,20 @@ import java.io.Serializable;
 public class Sensor implements Serializable
 {
     @JsonProperty
-    private int id;
+    private Integer id;
 
     @JsonProperty
-    private int stationId;
+    private Integer stationId;
 
     @JsonProperty
     private Param param;
 
-    public int getId ()
+    public Integer getId ()
     {
         return id;
     }
 
-    public void setId (int id)
+    public void setId (Integer id)
     {
         this.id = id;
     }
@@ -35,12 +35,12 @@ public class Sensor implements Serializable
         this.param = param;
     }
 
-    public int getStationId ()
+    public Integer getStationId ()
     {
         return stationId;
     }
 
-    public void setStationId (int stationId)
+    public void setStationId (Integer stationId)
     {
         this.stationId = stationId;
     }

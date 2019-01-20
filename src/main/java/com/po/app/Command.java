@@ -23,7 +23,7 @@ public class Command {
     }
 
     public enum FunctionalityChoice {
-        s, f1, f2, f3, f4, f5, f6, f7, f8;
+        s, f1, f2, f3, f4, f5, f6, f7, f8
     }
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss");
@@ -142,23 +142,30 @@ public class Command {
             CommandLine cmd = parser.parse(options, args);
             this.processCommand(cmd);
             this.parsed = true;
-        } catch (ParseException exc) {
-            // TODO: don't do it! throw some other exception of your own!
-            System.out.println(exc.getMessage());
+        } catch (InputParseException exc) {
+            System.out.println("Problem occurred: " + exc.getMessage());
             String header = "Data provider name must be passed. " +
                             "Also exactly one functionality option (e.g. '-f1') must be passed.";
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp(120,"java -jar air_condition.jar",
+                    header,options, "", true);
+        } catch (ParseException exc) {
+            String header = "Data provider name must be passed. " +
+                    "Also exactly one functionality option (e.g. '-f1') must be passed.";
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(120,"java -jar air_condition.jar",
                     header,options, "", true);
         }
     }
 
-    private void processCommand(CommandLine cmd) throws ParseException {
+    private void processCommand(CommandLine cmd) throws InputParseException {
         this.caching = cmd.hasOption("c");
 
         String dataProvider = cmd.getOptionValue("d");
         if (DataProvider.names.contains(dataProvider)) {
             this.provider = DataProvider.valueOf(dataProvider);
+        } else {
+            throw new InputParseException("No such provider! Use Airly or GIOS instead!");
         }
 
         if (cmd.hasOption("s")) {
@@ -171,16 +178,21 @@ public class Command {
             this.stationNames.add(args[0]);
             this.parameterNames.add(args[1]);
             this.functionality = FunctionalityChoice.f2;
-
         } else if (cmd.hasOption("f3")) {
             String[] args = cmd.getOptionValues("f3");
             this.stationNames.add(args[0]);
             this.parameterNames.add(args[1]);
             try {
-                this.dateTimes.add(LocalDateTime.parse(args[2], this.formatter));
-                this.dateTimes.add(LocalDateTime.parse(args[3], this.formatter));
+                LocalDateTime dateFrom = LocalDateTime.parse(args[2], this.formatter);
+                LocalDateTime dateTo = LocalDateTime.parse(args[3], this.formatter);
+                if (dateFrom.isBefore(dateTo) || dateFrom.isEqual(dateTo)) {
+                    this.dateTimes.add(dateFrom);
+                    this.dateTimes.add(dateTo);
+                } else {
+                    throw new InputParseException("Start date should precede end date!");
+                }
             } catch (DateTimeException exc) {
-                throw new ParseException("Incorrect date format!");
+                throw new InputParseException("Incorrect date format!");
             }
 
             this.functionality = FunctionalityChoice.f3;
@@ -188,26 +200,28 @@ public class Command {
         } else if (cmd.hasOption("f4")) {
             // TODO: add data structure that encapsulates adding typical arguments like station names, dates etc.
             String[] args = cmd.getOptionValues("f4");
-            int i = 0;
-            for (; i < args.length - 1; i++) {
-                this.stationNames.add(args[i]);
-            }
-            try {
-                this.dateTimes.add(LocalDateTime.parse(args[i], this.formatter));
-            } catch (DateTimeException exc) {
-                throw new ParseException("Incorrect date format!");
-            }
+            if (args.length >= 2) {
+                int i = 0;
+                for (; i < args.length - 1; i++) {
+                    this.stationNames.add(args[i]);
+                }
+                try {
+                    this.dateTimes.add(LocalDateTime.parse(args[i], this.formatter));
+                } catch (DateTimeException exc) {
+                    throw new InputParseException("Incorrect date format!");
+                }
 
-            this.functionality = FunctionalityChoice.f4;
-
+                this.functionality = FunctionalityChoice.f4;
+            } else {
+                throw new InputParseException("Too few arguments!");
+            }
         } else if (cmd.hasOption("f5")) {
             String[] args = cmd.getOptionValues("f5");
-            // TODO: input validation? o.O
             this.stationNames.add(args[0]);
             try {
                 this.dateTimes.add(LocalDateTime.parse(args[1], this.formatter));
             } catch (DateTimeException exc) {
-                throw new ParseException("Incorrect date format!");
+                throw new InputParseException("Incorrect date format!");
             }
 
             this.functionality = FunctionalityChoice.f5;
@@ -217,40 +231,56 @@ public class Command {
             try {
                 this.dateTimes.add(LocalDateTime.parse(args[1], this.formatter));
             } catch (DateTimeException exc) {
-                throw new ParseException("Incorrect date format!");
+                throw new InputParseException("Incorrect date format!");
             }
             try {
                 this.N = Integer.valueOf(args[2]);
+                if (N <= 0) {
+                    throw new InputParseException("N should be > 0");
+                }
             } catch (NumberFormatException exc) {
-                throw new ParseException("N must be an integer!");
+                throw new InputParseException("N must be an integer!");
             }
 
             this.functionality = FunctionalityChoice.f6;
         } else if (cmd.hasOption("f7")) {
             String[] args = cmd.getOptionValues("f7");
-            int i = 0;
-            for (; i < args.length - 1; i++) {
-                this.stationNames.add(args[i]);
-            }
-            this.parameterNames.add(args[i]);
+            if (args.length >= 2) {
+                int i = 0;
+                for (; i < args.length - 1; i++) {
+                    this.stationNames.add(args[i]);
+                }
+                this.parameterNames.add(args[i]);
 
-            this.functionality = FunctionalityChoice.f7;
+                this.functionality = FunctionalityChoice.f7;
+            } else {
+                throw new InputParseException("Too few arguments!");
+            }
         }  else if (cmd.hasOption("f8")) {
             String[] args = cmd.getOptionValues("f8");
-            this.parameterNames.add(args[0]);
-            int i = 1;
-            for (; i < args.length - 2; i++) {
-                this.stationNames.add(args[i]);
-            }
-            // TODO: boundary check! throw exception, best build your custom ParseException!
-            try {
-                this.dateTimes.add(LocalDateTime.parse(args[i], this.formatter));
-                this.dateTimes.add(LocalDateTime.parse(args[i+1], this.formatter));
-            } catch (DateTimeException exc) {
-                throw new ParseException("Incorrect date format!");
-            }
+            if (args.length >= 4) {
+                this.parameterNames.add(args[0]);
+                int i = 1;
+                for (; i < args.length - 2; i++) {
+                    this.stationNames.add(args[i]);
+                }
+                try {
+                    LocalDateTime dateFrom = LocalDateTime.parse(args[i], this.formatter);
+                    LocalDateTime dateTo = LocalDateTime.parse(args[i+1], this.formatter);
+                    if (dateFrom.isBefore(dateTo) || dateFrom.isEqual(dateTo)) {
+                        this.dateTimes.add(dateFrom);
+                        this.dateTimes.add(dateTo);
+                    } else {
+                        throw new InputParseException("Start date should precede end date!");
+                    }
+                } catch (DateTimeException exc) {
+                    throw new InputParseException("Incorrect date format!");
+                }
 
-            this.functionality = FunctionalityChoice.f8;
+                this.functionality = FunctionalityChoice.f8;
+            } else {
+                throw new InputParseException("Too few arguments!");
+            }
         }
     }
 
@@ -283,4 +313,18 @@ public class Command {
     }
 
     public int getN() { return N; }
+
+    private class InputParseException extends Exception {
+        private String message;
+
+        public InputParseException(String message) {
+            super(message);
+            this.message = message;
+        }
+
+        @Override
+        public String toString() {
+            return message;
+        }
+    }
 }

@@ -3,6 +3,7 @@ package com.po.app.data.gios.model.sensor;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class Param implements Serializable {
     @JsonProperty
@@ -15,14 +16,14 @@ public class Param implements Serializable {
     private String paramCode;
 
     @JsonProperty
-    private int idParam;
+    private Integer idParam;
 
-    public int getIdParam ()
+    public Integer getIdParam ()
     {
         return idParam;
     }
 
-    public void setIdParam (int idParam)
+    public void setIdParam (Integer idParam)
     {
         this.idParam = idParam;
     }
@@ -32,9 +33,8 @@ public class Param implements Serializable {
         return paramFormula;
     }
 
-    public void setParamFormula (String paramFormula)
-    {
-        this.paramFormula = paramFormula;
+    public void setParamFormula (String paramFormula) {
+        this.paramFormula = Objects.toString(paramFormula,"");
     }
 
     public String getParamName ()
@@ -42,9 +42,8 @@ public class Param implements Serializable {
         return paramName;
     }
 
-    public void setParamName (String paramName)
-    {
-        this.paramName = paramName;
+    public void setParamName (String paramName) {
+        this.paramName = Objects.toString(paramName,"");
     }
 
     public String getParamCode ()

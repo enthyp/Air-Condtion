@@ -36,6 +36,7 @@ public interface IService {
 
     /**
      * A representation of parameter or index value at given point in time.
+     * <p>Admits natural chronological ordering.
      */
     class DoubleInstant implements Comparable<DoubleInstant> {
         public LocalDateTime dateTime;
@@ -66,23 +67,40 @@ public interface IService {
 
     /**
      * Returns a map from measuring station's name to its ID.
+     * <p>It is warranted that there are no null nor empty values in the map. // TODO: handle ProcessingException
+     * upon empty map
+     *    // TODO: handle other server/processing errors.
+     * <p>Warnings are printed out in case of null station name values in JSON.
+     *
      * @return map from name of a station (certain word sequence that uniquely identifies a station)
      * to station's ID.
+     * @throws ProcessingException if no valid 'station: ID' pairs are provided or there is an
+     * incompatibility between expected and provided JSON response or other IO errors occur.
      */
     Map<String, Integer> getNameIdMap()
             throws ProcessingException, WebApplicationException;
 
     /**
      * Returns current value of air quality index for given measuring station.
-     * @param stationId ID of measuring station.
+     * <p> It is warranted that index value is not null nor empty, date may be null however, if not
+     * provided or in incorrect format.
+     * <p>Warnings are printed out in case of incorrect or missing index date.
+     * @param stationId ID of measuring station. If incorrect then any server exceptions are transferred
+     *                  (WebApplicationException) and if empty return value is provided - ProcessingException
+     *                  is thrown.
      * @return pair (indexValue, timeInstant), where `timeInstant` is the point in time at which `indexValue`
      *         was calculated.
+     * @throws ProcessingException if no index value is provided (which may happen if e.g. incorrect stationID
+     * is passed as an argument) or there is an incompatibility between expected and provided JSON response
+     * or other IO errors occur.
      */
     StringInstant getCurrentIndex(Integer stationId)
             throws ProcessingException, WebApplicationException;
 
     /**
      * Returns a map from time instant to a level of an air quality index for given measuring station.
+     * Resulting map may be empty if no values are found fo given dates.
+     * <p>It follows the same rules when it comes to exceptions as <i>getCurrentIndex</i> method.
      * @param stationId ID of measuring station.
      * @param dateTimes list of time instants for which to return index values. If empty, all available index
      *                  levels are returned.
@@ -93,7 +111,8 @@ public interface IService {
 
     /**
      * Returns a map from parameter name to current value of parameter for given measuring station.
-     * @param stationId ID of measuring station.
+     * @param stationId ID of measuring station. If incorrect an empty map may be returned or server side
+     *                  exception (WebApplicationException) may be transferred.
      * @param params list of parameter names for which to return values. If empty, values for all available
      *               parameters are returned.
      * @return map from parameter name to pair (parameterValue, timeInstant), where `timeInstant` is the point

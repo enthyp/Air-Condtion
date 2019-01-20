@@ -9,14 +9,14 @@ public class Value implements Serializable {
     private String date;
 
     @JsonProperty
-    private float value;
+    private Float value;
 
-    public float getValue ()
+    public Float getValue ()
     {
         return value;
     }
 
-    public void setValue (float value)
+    public void setValue (Float value)
     {
         this.value = value;
     }

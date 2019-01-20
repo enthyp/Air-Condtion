@@ -1,126 +1,68 @@
 package com.po.app;
 
-import static org.mockito.Mockito.*;
-
-import com.po.app.data.airly.repository.AirlyDataSource;
-import com.po.app.data.airly.AirlyService;
-import com.po.app.data.gios.repository.GiosCachedDataSource;
-import com.po.app.data.gios.repository.GiosDataSource;
-import com.po.app.data.gios.GiosService;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.stream.Collectors;
 
 @Category({Functional.class, WebAccess.class})
 public class AppTest {
 
-    /*
-     * TODO: for each method of each datasource - test for:
-     * -> incorrect (e.g. negative)/empty argument values (what are the results? Null values? Exceptions?)
-     * -> handling HTTP404, HTTP500 and similar
-     */
-
     @Test
-    public void mainTestCommandLine() {
-        //App.main(new String[] {"-d", "GIOS", "-f1", "Kraków, Aleja Krasińskiego"});
-        //App.main(new String[] {"-d", "GIOS", "-f3", "noob", "GIOS", "2018-12-22_12:04:00", "2018-12-22_12:04:00"});
-        //App.main(new String[] {"-d", "GIOS", "-f4", "noob", "doob-meyer", "2018-12-12_12:04:00"});
-        //App.main(new String[] {"-d", "GIOS", "-f2", "Kraków, Aleja Krasińskiego", "PM10"});
-//        App.main(new String[] {"-d", "GIOS", "-c", "-f3", "Kraków, Aleja Krasińskiego", "PM10",
-//                "2018-12-12_12:04:00", "2019-12-12_12:04:00"});
-        //App.main(new String[] {"-d", "GIOS", "-f4", "Kraków, Aleja Krasińskiego", "Kraków, ul. Bujaka", "2018-12-22_12:04:00"});
-        App.main(new String[] {"-d", "GIOS", "-s"});
+    public void mainTestShow()
+    {
+        App.main(new String[]{"-d", "GIOS", "-s"});
+        App.main(new String[]{"-d", "Airly", "-s"});
     }
 
     @Test
-    public void jsonTest() throws IOException {
-        String fileName = "/gios/get_sensors/sensors_14.json";
-        File file = new File(this.getClass().getResource(fileName).getFile());
-        String fileContent = Files.lines(file.toPath(), StandardCharsets.UTF_8)
-                .collect(Collectors.joining("\n"));
-        System.out.println(fileContent);
+    public void mainTestF1() {
+        App.main(new String[]{"-d", "GIOS", "-f1", "Kraków, Aleja Krasińskiego"});
+        App.main(new String[]{"-d", "Airly", "-f1", "Polska Stacja Polarna"});
+        App.main(new String[]{"-d", "GIOS", "-f1", ""});
     }
 
     @Test
-    public void testMockito() {
-        // mock creation
-        List mockedList = mock(List.class);
-
-        // using mock object - it does not throw any "unexpected interaction" exception
-        mockedList.add("one");
-        mockedList.clear();
-
-        // selective, explicit, highly readable verification
-        verify(mockedList).add("one");
-        verify(mockedList).clear();
-
-        // stubbing appears before the actual execution
-        when(mockedList.get(0)).thenReturn("first");
-
-        // the following prints "first"
-        System.out.println(mockedList.get(0));
-
-        // the following prints "null" because get(999) was not stubbed
-        System.out.println(mockedList.get(999));
+    public void mainTestF2() {
+        App.main(new String[]{"-d", "GIOS", "-f2", "Kraków, Aleja Krasińskiego", "PM10"});
+        App.main(new String[]{"-d", "Airly", "-f2", "Wieliczka_Adama Asnyka", "PM25"});
     }
 
     @Test
-    public void testGios() throws IOException {
-        GiosDataSource dataSource = new GiosDataSource();
-        GiosCachedDataSource cachedDataSource = new GiosCachedDataSource(dataSource);
-        GiosService service = new GiosService(cachedDataSource);
-        System.out.println(dataSource.getIndex(-1));
-//        System.out.println(service.getParamValue(
-//                164,
-//                new ArrayList<LocalDateTime>() {{
-//                    add(LocalDateTime.of(2019, 1, 5, 10, 0));
-//                    add(LocalDateTime.of(2018, 12, 31, 14, 0));
-//                }},
-//                new ArrayList<String>() {{
-//                    add("NO2");
-//                    add("C6H6");
-//                }}));
-//        System.out.println(service.getNameIdMap());
-        //System.out.println(cachedDataSource.findAllStations());
-        //System.out.println(cachedDataSource.getSensors(14));
-        //System.out.println(cachedDataSource.getSensorData(92));
-        //System.out.println(cachedDataSource.getIndex(52));
+    public void mainTestF3() {
+        App.main(new String[]{"-d", "GIOS", "-f3", "bg", "GIOS", "2018-12-22_12:04:00", "2018-12-22_12:04:00"});
+        App.main(new String[]{"-d", "GIOS", "-c", "-f3", "Kraków, Aleja Krasińskiego", "PM10",
+                "2018-12-12_12:04:00", "2019-12-12_12:04:00"});
     }
 
     @Test
-    public void testAirly() throws IOException {
-        String resourceName = "cred.properties";
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        Properties credProps = new Properties();
-        try(InputStream resourceStream = loader.getResourceAsStream(resourceName)) {
-            credProps.load(resourceStream);
-        }
-        String API_KEY = credProps.getProperty("API_KEY");
-        AirlyDataSource dataSource = new AirlyDataSource(API_KEY);
-        AirlyService service = new AirlyService(dataSource);
-        System.out.println(dataSource.findAllInstallations());
-        //System.out.println(service.getCurrentIndex(576));
-        //System.out.println(service.getCurrentParamValue(576, new ArrayList<String>() {{add("PM25");}}));
-//        System.out.println(service.getIndex(6986,
-//                new ArrayList<LocalDateTime>() {{
-//                    add(LocalDateTime.of(2019, 1, 5, 4, 0));
-//                }}));
-//        System.out.println(service.getParamValue(6986,
-//                new ArrayList<LocalDateTime>() {{
-//                    add(LocalDateTime.of(2019, 1, 5, 4, 0));
-//                }},
-//                new ArrayList<String>() {{
-//                }}));
+    public void mainTestF4() {
+        App.main(new String[] {"-d", "Airly", "-f4", "Polska Stacja Polarna", "2018-12-12_12:04:00"});
+        App.main(new String[] {"-d", "GIOS", "-f4", "Kraków, Aleja Krasińskiego", "Kraków, ul. Bujaka", "2018-12-22_12:04:00"});
+    }
+
+    @Test
+    public void mainTestF5() {
+        App.main(new String[] {"-d", "Airly", "-f5", "Polska Stacja Polarna", "2019-01-20_03:00:00"});
+        App.main(new String[] {"-d", "GIOS", "-f5", "Kraków, os. Swoszowice", "2019-01-20_12:00:00"});
+    }
+
+    @Test
+    public void mainTestF6() {
+        App.main(new String[] {"-d", "GIOS", "-f6", "Żyrardów-Roosevelta", "2019-01-20_03:00:00", "1"});
+        App.main(new String[] {"-d", "Airly", "-f6", "Wieliczka_Adama Asnyka", "2019-01-20_03:00:00", "5"});
+    }
+
+
+    @Test
+    public void mainTestF7() {
+        App.main(new String[] {"-d", "GIOS", "-f7", "Żyrardów-Roosevelta", "Kraków, os. Swoszowice", "PM10"});
+        App.main(new String[] {"-d", "Airly", "-f7", "Tarnów_Bitwy pod Studziankami",
+                "Wieliczka_Adama Asnyka", "Polska Stacja", "TEMPERATURE"});
+    }
+
+    @Test
+    public void mainTestF8() {
+        App.main(new String[] {"-d", "GIOS", "-f8", "O3", "Żyrardów-Roosevelta",
+                "Kraków, Aleja Krasińskiego", "Kraków, ul. Bujaka", "2019-01-20_20:00:00",
+                "2019-01-20_20:00:00"});
     }
 }
